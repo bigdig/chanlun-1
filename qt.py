@@ -204,7 +204,7 @@ class DateAxis(pg.AxisItem):
 code = '300002.SZ'
 
 global data
-with open(r'C:\Users\gyrx-zstzgy07\Desktop\chan\创业板30分K\%s.pkl' % code, 'rb') as f:
+with open(r'C:\Users\lizard\Desktop\chan\创业板30分K\%s.pkl' % code, 'rb') as f:
     data = pickle.load(f)
 
 global dataToNow
@@ -323,7 +323,7 @@ def setYRange():
 
 proxy = pg.SignalProxy(p1.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
 
-
+aaa = 0
 def update():
     global itemK,itemBi,itemLine,itemZhongshu
     dataToNowDf = DataFrame(index=dataToNow.Times,data = dataToNow.Data[0],columns=['price'])
@@ -335,12 +335,12 @@ def update():
         data.Data[1].append(i[1]['price']['high'])
         data.Data[2].append(i[1]['price']['low'])
         data.Data[3].append(i[1]['price']['close'])
+        data.Data[4].append(0)
     quotes = []
     for i in range(len(data.Times)):
         quotes.append([i, data.Data[0][i], data.Data[3][i],
                        data.Data[2][i], data.Data[1][i]])
      
-    del chan    
     chan = Chan(data.Data[0], data.Data[1], data.Data[2],
                 data.Data[3], data.Data[4], data.Times)
     chan.barsMerge()
@@ -349,16 +349,16 @@ def update():
     chan.findLines()
     chan.findZhongshus()
     chan.calculate_ta()
-    
+    a += 1
     itemK.set_data(quotes)
-    itemBi.set_data(chan.bis)
-    itemLine.set_data(chan.lines)
-    itemZhongshu.set_data(chan.zhongshus)
+#    itemBi.set_data(chan.bis)
+#    itemLine.set_data(chan.lines)
+#    itemZhongshu.set_data(chan.zhongshus)
     app.processEvents()  ## force complete redraw for every plot
     
 timer = QtCore.QTimer()
 timer.timeout.connect(update)
-timer.start(100)
+timer.start(100000)
 
 # Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
