@@ -27,6 +27,7 @@ warnings.simplefilter(action = 'ignore',category = RuntimeWarning)
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from matplotlib.finance import candlestick_ohlc
 matplotlib.style.use('ggplot')
 
 
@@ -129,7 +130,7 @@ class Chan(object):
         self.macdBenchmarkLastEnd = []
         
         self.trendLineRecord = []
-    
+
     def calculate_ta(self):
         
         nslow = 26
@@ -217,7 +218,7 @@ class Chan(object):
         ax1 = fig.add_axes(rect1)
         ax1.set_xlim(left=0)
         ax3 = fig.add_axes(rect2, sharex=ax1)
-        #matplotlib.finance.candlestick_ohlc(ax1,quotes,width=1,colordown='g',colorup='r')
+        matplotlib.finance.candlestick_ohlc(ax1,quotes,width=1,colordown='g',colorup='r')
         fillcolor = 'darkslategrey'
         ax3.plot(range(self.length), self.diff, color='white', lw=2)
         ax3.plot(range(self.length), self.dea, color='yellow', lw=1)
@@ -272,6 +273,7 @@ class Chan(object):
             ax1.annotate(round(label,2),xy=(self.chanBars[self.bis[line].barIndex1].closeIndex,self.closeBar[self.chanBars[self.bis[line].barIndex1].closeIndex]),
                                    xytext=(self.chanBars[self.bis[line].barIndex1].closeIndex+5,self.closeBar[self.chanBars[self.bis[line].barIndex1].closeIndex]+200),
                                            arrowprops=dict(facecolor='black'))
+        
     
     
     def plotBeichi(self):
@@ -363,6 +365,9 @@ class Chan(object):
 
     
     def plotBuySell(self):
+        """
+        标记笔、 买点卖点，底背驰、顶背驰
+        """
         fig = plt.figure(figsize = (45,20))
         ax1 = fig.add_subplot(1,1,1)
         for bi in self.bis:
@@ -393,11 +398,11 @@ class Chan(object):
         for i in self.closeLong:
             ax1.plot(i,self.closeBar[i],marker='*',color='black',markersize = 6) 
             
-#        for i in trendDibeichi:
-#            ax1.plot(i,self.closeBar[i],marker='o',color='green',markersize = 10)
-#                   
-#        for i in trendDingbeichi:
-#            ax1.plot(i,self.closeBar[i],marker='o',color='magenta',markersize = 10)
+        for i in self.trendDibeichi:
+            ax1.plot(i,self.closeBar[i],marker='o',color='green',markersize = 10)
+                   
+        for i in self.trendDingbeichi:
+            ax1.plot(i,self.closeBar[i],marker='x',color='magenta',markersize = 10)
     
     def plot2(self):
         quotes = []
@@ -1180,7 +1185,7 @@ class Chan(object):
             
         #看目前是什么样的趋势
         
-        if self.Zhongshus[-1].high >= self.Zhongshus[-2].high:
+        if self.zhongshus[-1].high >= self.zhongshus[-2].high:
             benchmark = 'up'
         else:
             benchmark = 'down'
@@ -1325,57 +1330,57 @@ class Chan(object):
         
         
         
-#        #找盘整背驰
-#        try:
-#            macdNow, macdNowStart, macdNowEnd = self.matchMacd(nowLine)
-#
-#            if benchmark == 'up' and self.bis[nowLine].biType == 'up' and (self.chanBars[self.bis[nowLine].barIndex2].closeIndex - self.chanBars[self.bis[nowLine].barIndex1].closeIndex) > 3:
-#                
-#                
-#                #判断是否创新高
-#                benchmarkLineHigh = self.chanBars[self.bis[benchmarkLine].barIndex2].high
-#                
-#                
-#                if macdNow <= macdBenchmark and self.highBar[-1] >= benchmarkLineHigh: #发生了背驰
-#                    self.dingbeichi.append(self.length)
-#                    if self.position == 0:
-#                        self.dingbeichiLine.append(nowLine)
-#                    
-#                                                    
-#            elif benchmark == 'down' and self.bis[nowLine].biType == 'down' and (self.chanBars[self.bis[nowLine].barIndex2].closeIndex - self.chanBars[self.bis[nowLine].barIndex1].closeIndex) > 3:
-#                
-#                #判断是否创新低
-#                benchmarkLineLow = self.chanBars[self.bis[benchmarkLine].barIndex2].low            
-#                
-#                if macdNow >= macdBenchmark and self.lowBar[-1] <= benchmarkLineLow: #发生了背驰
-#                    self.dibeichi.append(self.length)
-#                    if self.position == 0:
-#                        self.dibeichiLine.append(nowLine)
-#                    
-#        except:
-#            pass
-#        
-#        #check 是否开仓
-#        try:
-#            if self.position == 0:
-#                if nowLine == self.dibeichiLine[-1]+1:
-#                    self.position = 1
-#                    self.openLong.append(self.length)
-#                elif nowLine == self.dingbeichiLine[-1]+1:
-#                    self.position = -1
-#                    self.openShort.append(self.length)
-#                    
-#            if self.position == 1:
-#                if nowLine == self.dibeichiLine[-1]+2:
-#                    self.position = 0
-#                    self.closeLong.append(self.length)
-#                    
-#            if self.position == -1:
-#                if nowLine == self.dingbeichiLine[-1]+2:
-#                    self.position = 0
-#                    self.closeShort.append(self.length)
-#        except:
-#            pass
+       #找盘整背驰
+        try:
+           macdNow, macdNowStart, macdNowEnd = self.matchMacd(nowLine)
+
+           if benchmark == 'up' and self.bis[nowLine].biType == 'up' and (self.chanBars[self.bis[nowLine].barIndex2].closeIndex - self.chanBars[self.bis[nowLine].barIndex1].closeIndex) > 3:
+               
+               
+               #判断是否创新高
+               benchmarkLineHigh = self.chanBars[self.bis[benchmarkLine].barIndex2].high
+               
+               
+               if macdNow <= macdBenchmark and self.highBar[-1] >= benchmarkLineHigh: #发生了背驰
+                   self.dingbeichi.append(self.length)
+                   if self.position == 0:
+                       self.dingbeichiLine.append(nowLine)
+                   
+                                                   
+           elif benchmark == 'down' and self.bis[nowLine].biType == 'down' and (self.chanBars[self.bis[nowLine].barIndex2].closeIndex - self.chanBars[self.bis[nowLine].barIndex1].closeIndex) > 3:
+               
+               #判断是否创新低
+               benchmarkLineLow = self.chanBars[self.bis[benchmarkLine].barIndex2].low            
+               
+               if macdNow >= macdBenchmark and self.lowBar[-1] <= benchmarkLineLow: #发生了背驰
+                   self.dibeichi.append(self.length)
+                   if self.position == 0:
+                       self.dibeichiLine.append(nowLine)
+                   
+        except:
+           pass
+       
+       #check 是否开仓
+        try:
+           if self.position == 0:
+               if nowLine == self.dibeichiLine[-1]+1:
+                   self.position = 1
+                   self.openLong.append(self.length)
+               elif nowLine == self.dingbeichiLine[-1]+1:
+                   self.position = -1
+                   self.openShort.append(self.length)
+                   
+           if self.position == 1:
+               if nowLine == self.dibeichiLine[-1]+2:
+                   self.position = 0
+                   self.closeLong.append(self.length)
+                   
+           if self.position == -1:
+               if nowLine == self.dingbeichiLine[-1]+2:
+                   self.position = 0
+                   self.closeShort.append(self.length)
+        except:
+           pass
                                                
     
     def macdSeparate(self):
